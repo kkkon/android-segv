@@ -24,3 +24,7 @@ proguard/
 
 # 'ant release' configuration file
 ant.properties
+
+# jni
+libs/
+obj/
