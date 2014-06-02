@@ -17,6 +17,32 @@
 #include <string.h>
 #include <jni.h>
 
+#if defined(ANDROID)
+#include <android/log.h>
+#endif // defined(ANDROID)
+
+#if defined(LOG_TAG)
+#undef LOG_TAG
+#endif // defined(LOG_TAG)
+
+#define LOG_TAG         "android-segv"
+
+#if defined(ANDROID)
+#if defined(NDEBUG)
+#define LOGD(...)       
+#define LOGI(...)       __android_log_print(ANDROID_LOG_INFO ,LOG_TAG,__VA_ARGS__)
+#define LOGE(...)       __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#else // defined(NDEBUG)
+#define LOGD(...)       __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
+#define LOGI(...)       __android_log_print(ANDROID_LOG_INFO ,LOG_TAG,__VA_ARGS__)
+#define LOGE(...)       __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#endif // defined(NDEBUG)
+#else // defined(ANDROID)
+#define LOGD(...)       
+#define LOGI(...)       
+#define LOGE(...)       
+#endif // defined(ANDROID)
+
 
 static
 void invokeSEGV(void)
@@ -72,6 +98,8 @@ static
 void * thread_invoke( void * pArg )
 {
     invokeSEGV();
+
+    return NULL;
 }
 
 void
@@ -87,4 +115,37 @@ Java_jp_ne_sakura_kkkon_example_androidsegv_AndroidSEGV_invokeSEGV2
         void * result = NULL;
         pthread_join( thread, &result );
     }
+}
+
+
+static
+void
+sigaction_handler_nothing( int signum, siginfo_t *siginfo, void *param )
+{
+
+    signal( signum, SIG_DFL );
+}
+
+void
+Java_jp_ne_sakura_kkkon_example_androidsegv_AndroidSEGV_invokeSEGV3
+(
+    JNIEnv* env,
+    jobject thiz
+)
+{
+    struct sigaction act;
+    struct sigaction old;
+    memset( &act, 0, sizeof(act) );
+    memset( &old, 0, sizeof(old) );
+
+    act.sa_sigaction = sigaction_handler_nothing;
+    act.sa_flags = SA_RESTART | SA_SIGINFO;
+    sigemptyset( &act.sa_mask );
+
+    sigaction( SIGSEGV, &act, &old );
+    LOGI( "old.sa_sigaction=%p", old.sa_sigaction );
+
+    invokeSEGV();
+
+    sigaction( SIGSEGV, &old, NULL );
 }

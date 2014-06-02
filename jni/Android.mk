@@ -19,6 +19,8 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := android-segv
 LOCAL_SRC_FILES := android-segv.c
 
+LOCAL_LDLIBS    := -llog
+
 LOCAL_CFLAGS += -fverbose-asm
 LOCAL_CFLAGS += -v
 ifeq (,$(findstring clang,$(NDK_TOOLCHAIN_VERSION)))

@@ -31,6 +31,7 @@ public class AndroidSEGV extends Activity implements OnClickListener
     private Button btn1;
     private Button btn2;
     private Button btn3;
+    private Button btn4;
 
     /** Called when the activity is first created. */
     @Override
@@ -72,6 +73,11 @@ public class AndroidSEGV extends Activity implements OnClickListener
         this.btn3.setOnClickListener( this );
         layout.addView( this.btn3 );
 
+        this.btn4 = new Button(this);
+        this.btn4.setText( "invoke SEGV sigaction" );
+        this.btn4.setOnClickListener( this );
+        layout.addView( this.btn4 );
+
         setContentView( layout );
     }
 
@@ -85,6 +91,10 @@ public class AndroidSEGV extends Activity implements OnClickListener
         else if ( this.btn3 == v )
         {
             invokeSEGV2();
+        }
+        else if ( this.btn4 == v )
+        {
+            invokeSEGV3();
         }
     }
 
@@ -108,6 +118,7 @@ public class AndroidSEGV extends Activity implements OnClickListener
 
     public native void invokeSEGV();
     public native void invokeSEGV2();
+    public native void invokeSEGV3();
 
     /* this is used to load the 'hello-jni' library on application
      * startup. The library has already been unpacked into
